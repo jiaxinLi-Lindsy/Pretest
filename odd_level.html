@@ -847,6 +847,7 @@ var forceDirection = null;
 var directionHistory = [];
 var allFilesPresent = true;
 var trialRecords = [];
+var MAX_AUDIO_RETRY = 3; // 最大重試次數
 var stimulusEndTime = 0;
 
 // Oddity task variables
@@ -1217,6 +1218,26 @@ function playAudioWithTimeout(audio, timeout) {
     });
 }
 
+// 帶重試功能的音頻播放函數
+function playAudioWithRetry(audio, timeout, retryCount) {
+    retryCount = retryCount || 0;
+    
+    return playAudioWithTimeout(audio, timeout).catch(function(error) {
+        if (retryCount < MAX_AUDIO_RETRY) {
+            logDebug("Audio " + audio.id + " failed, retrying... (attempt " + (retryCount + 1) + "/" + MAX_AUDIO_RETRY + ")");
+            // 等待500ms後重試
+            return delay(500).then(function() {
+                // 嘗試重新加載音頻
+                audio.load();
+                return playAudioWithRetry(audio, timeout, retryCount + 1);
+            });
+        } else {
+            logDebug("Audio " + audio.id + " failed after " + MAX_AUDIO_RETRY + " retries");
+            throw new Error("音頻播放失敗（已重試" + MAX_AUDIO_RETRY + "次）: " + error.message);
+        }
+    });
+}
+
 function resetPage() {
     numberOfIterations++;
     document.getElementById('firstBtn').disabled = true;
@@ -1460,7 +1481,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第一個音";
         document.getElementById('firstBtn').classList.add('button-playing');
         logDebug("Playing first sound...");
-        await playAudioWithTimeout(sounds[0]);
+        await playAudioWithRetry(sounds[0]);
         document.getElementById('firstBtn').classList.remove('button-playing');
         
         await delay(1000);
@@ -1469,7 +1490,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第二個音";
         document.getElementById('secondBtn').classList.add('button-playing');
         logDebug("Playing second sound...");
-        await playAudioWithTimeout(sounds[1]);
+        await playAudioWithRetry(sounds[1]);
         document.getElementById('secondBtn').classList.remove('button-playing');
         
         await delay(1000);
@@ -1478,7 +1499,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第三個音";
         document.getElementById('thirdBtn').classList.add('button-playing');
         logDebug("Playing third sound...");
-        await playAudioWithTimeout(sounds[2]);
+        await playAudioWithRetry(sounds[2]);
         document.getElementById('thirdBtn').classList.remove('button-playing');
         
         // 启用按钮让用户选择
@@ -1496,6 +1517,11 @@ async function playOdditySequence() {
         document.getElementById('thirdBtn').style.background = "#66CCFF";
         
     } catch (error) {
+        logDebug("Audio playback error: " + error);
+        document.getElementById('text1').value = "音頻播放失敗（已重試3次），請刷新頁面";
+        clearButtonAnimations();
+        setTimeout(showDiagnostics, 1000);
+    } {
         logDebug("Audio playback error: " + error);
         document.getElementById('text1').value = "音頻播放錯誤，請刷新頁面";
         clearButtonAnimations();
