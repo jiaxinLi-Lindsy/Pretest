@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>POLYU-Peng's Lab: Pitch Discrimination Test</title>
+    <title>Poly-Peng's Lab—Pretest: Rising Tone Oddity Test</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -604,7 +604,7 @@
     <div class="container">
         <div class="header">
             <img src="Media/animation.gif" alt="Experiment animation">
-            <div class="training-info">Mid Rising Tone Discrimination (Oddity Task)</div>
+            <div class="training-info">Rising Tone Oddity Task (Pretest)</div>
             <div id="experimentProgress" class="experiment-progress" style="display: none;">
                 實驗進度: <span id="progressText">1/3</span>
             </div>
@@ -653,7 +653,7 @@
         </div>
         
         <div id="resultsContainer" class="results-container">
-            <h2 class="result-heading">Dynamic Pitch Discrimination Test Results (Oddity Task)</h2>
+            <h2 class="result-heading">Rising Tone Oddity Test Results (Pretest)</h2>
             
             <div class="highlight-box">
                 <h3 style="margin-top: 0;">Just Noticeable Difference (JND)</h3>
@@ -1715,11 +1715,10 @@ function testEmailSending() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
-        const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'N/A';
         
         const csvRows = [];
         csvRows.push("Participant ID: " + participantId);
-        csvRows.push("Session Number: " + sessionNumber);
+        csvRows.push("Experiment Type: Pretest");
         csvRows.push("NOTE: This is a TEST email");
         csvRows.push("");
         
@@ -1735,12 +1734,12 @@ function testEmailSending() {
         const csvContent = csvRows.join("\n");
         const BOM = '\uFEFF';
         const csvBase64 = btoa(unescape(encodeURIComponent(BOM + csvContent)));
-        const fileName = "TEST_" + participantId + "_Session" + sessionNumber + "_Oddity.csv";
+        const fileName = "TEST_" + participantId + "_Pretest_Rising_Tone_Oddity.csv";
         
         const templateParams = {
             participant_id: participantId,
-            session_number: sessionNumber,
-            experiment_type: "[TEST] Oddity Task",
+            session_number: "Pretest",
+            experiment_type: "[TEST] Rising Tone Oddity Task (Pretest)",
             start_time: window.experimentStartTime || 'N/A',
             completion_date: new Date().toLocaleString('zh-CN'),
             total_trials: trialRecords.length,
@@ -1778,15 +1777,157 @@ function testEmailSending() {
     }
 }
 
-function exportToCSV() {
+function sendCurrentExperimentResults() {
+    logDebug("Preparing Rising_oddity experiment results for email...");
+    
+    if (typeof emailjs === 'undefined') {
+        logDebug("Error: EmailJS library not loaded");
+        alert('EmailJS庫未加載！請檢查網絡連接。');
+        return;
+    }
+    
     const urlParams = new URLSearchParams(window.location.search);
     const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
-    const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'N/A';
     
     const csvRows = [];
     
     csvRows.push("Participant ID: " + participantId);
-    csvRows.push("Session Number: " + sessionNumber);
+    csvRows.push("Experiment Type: Pretest");
+    csvRows.push("");
+    
+    const headers = [
+        "Trial Number", 
+        "Timestamp", 
+        "Difficulty Level", 
+        "Modulation Window (%)",
+        "Modulation Window (ms)",
+        "Modulation Rate (semitones/s)",
+        "Slope (semitones/ms)",
+        "Odd Position",
+        "User Response", 
+        "Correct Response", 
+        "Is Correct", 
+        "Reaction Time (ms)", 
+        "Is Reversal",
+        "Step Direction"
+    ];
+    
+    csvRows.push(headers.join(","));
+    
+    trialRecords.forEach(function(trial) {
+        const row = [
+            trial.trialNumber,
+            '"' + trial.timestamp + '"',
+            trial.difficultyLevel,
+            trial.modulationWindowPercent,
+            trial.modulationWindowDuration,
+            trial.modulationRate,
+            trial.slope,
+            trial.oddPosition,
+            '"' + trial.userResponse + '"',
+            '"' + trial.correctResponse + '"',
+            trial.isCorrect ? "1" : "0",
+            trial.reactionTime,
+            trial.isReversal ? "1" : "0",
+            '"' + trial.stepDirection + '"'
+        ];
+        csvRows.push(row.join(","));
+    });
+    
+    const hasData = NumberOfReversals >= MINIMUMREVERSALS;
+    
+    csvRows.push("\nRESULTS SUMMARY");
+    csvRows.push("\nThreshold Results");
+    csvRows.push("Metric,Value,Unit");
+    csvRows.push("Average Difficulty Level," + (hasData ? sentAverage.toFixed(4) : "Insufficient data") + ",level");
+    csvRows.push("Standard Deviation," + (hasData ? sentStdev.toFixed(4) : "N/A") + ",level");
+    csvRows.push("Threshold Window Percent," + (hasData ? thresholdWindowPercent.toFixed(2) : "N/A") + ",%");
+    csvRows.push("Threshold Window Duration," + (hasData ? thresholdWindowDuration.toFixed(2) : "N/A") + ",ms");
+    csvRows.push("JND Absolute Difference," + (hasData ? jndAbsoluteDifference.toFixed(2) : "N/A") + ",ms");
+    csvRows.push("JND Percent Difference," + (hasData ? jndPercentDifference.toFixed(2) : "N/A") + ",%");
+    csvRows.push("Weber's Ratio," + (hasData ? webersRatio.toFixed(4) : "N/A") + "");
+    
+    const rtStats = calculateReactionTimeStats();
+    csvRows.push("\nReaction Time Statistics (ms)");
+    csvRows.push("Mean," + rtStats.mean);
+    csvRows.push("Median," + rtStats.median);
+    csvRows.push("Standard Deviation," + rtStats.sd);
+    
+    const accuracyStats = calculateAccuracyStats();
+    csvRows.push("\nAccuracy Statistics");
+    csvRows.push("Correct Responses," + accuracyStats.correct);
+    csvRows.push("Total Responses," + accuracyStats.total);
+    csvRows.push("Percentage," + accuracyStats.percentage + "%");
+    
+    csvRows.push("\nExperiment Parameters");
+    csvRows.push("Paradigm,Oddity (3-AFC)");
+    csvRows.push("Max Reversals," + MAXREVERSALS);
+    csvRows.push("Min Reversals for Calculation," + MINIMUMREVERSALS);
+    csvRows.push("Max Iterations," + MAXITERATIONS);
+    csvRows.push("Tone Type,Rising (250ms duration)");
+    csvRows.push("Pitch Change," + PITCH_FALL_SEMITONES + " semitones");
+    csvRows.push("Adaptive Rule,2-down-1-up");
+    csvRows.push("Step Size,1 (uniform)");
+    
+    const csvContent = csvRows.join("\n");
+    
+    const BOM = '\uFEFF';
+    const contentWithBOM = BOM + csvContent;
+    const csvBase64 = btoa(unescape(encodeURIComponent(contentWithBOM)));
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = participantId + "_Pretest_Rising_Tone_Oddity.csv";
+    
+    let resultsSummary = "Rising Tone Oddity Task Results (Pretest):\n";
+    if (hasData) {
+        resultsSummary += "- JND: " + jndAbsoluteDifference.toFixed(2) + " ms\n";
+        resultsSummary += "- Threshold Window: " + thresholdWindowPercent.toFixed(2) + "% (" + thresholdWindowDuration.toFixed(2) + " ms)\n";
+        resultsSummary += "- Weber's Ratio: " + webersRatio.toFixed(4) + "\n";
+    }
+    resultsSummary += "- Accuracy: " + accuracyStats.percentage + "%\n";
+    resultsSummary += "- Mean RT: " + rtStats.mean + " ms";
+    
+    const templateParams = {
+        participant_id: participantId,
+        session_number: "Pretest",
+        experiment_type: "Rising Tone Oddity Task (Pretest)",
+        start_time: window.experimentStartTime || localStorage.getItem('experimentStartTime') || 'N/A',
+        completion_date: new Date().toLocaleString('zh-CN'),
+        total_trials: trialRecords.length,
+        total_reversals: NumberOfReversals || 0,
+        jnd_value: hasData ? jndAbsoluteDifference.toFixed(2) + " ms" : "N/A",
+        accuracy: accuracyStats.percentage + "%",
+        mean_rt: rtStats.mean + " ms",
+        attachment_name: fileName,
+        attachment_content: csvBase64,
+        results_summary: resultsSummary
+    };
+    
+    logDebug("Sending email with Rising_oddity data...");
+    logDebug("JND: " + (hasData ? jndAbsoluteDifference.toFixed(2) + " ms" : "N/A"));
+    
+    const serviceId = (typeof EMAIL_CONFIG !== 'undefined' && EMAIL_CONFIG.serviceId) || 'service_exe9d5a';
+    const templateId = (typeof EMAIL_CONFIG !== 'undefined' && EMAIL_CONFIG.templateId) || 'template_4c3g3ss';
+    
+    emailjs.send(serviceId, templateId, templateParams)
+        .then(function(response) {
+            logDebug("Email sent successfully! Status: " + response.status);
+            console.log('SUCCESS!', response.status, response.text);
+        })
+        .catch(function(error) {
+            logDebug("Email failed to send. Error: " + JSON.stringify(error));
+            console.error('FAILED...', error);
+        });
+}
+
+function exportToCSV() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
+    
+    const csvRows = [];
+    
+    csvRows.push("Participant ID: " + participantId);
+    csvRows.push("Experiment Type: Pretest");
     csvRows.push("");
     
     const headers = [
@@ -1864,7 +2005,7 @@ function exportToCSV() {
     
     csvRows.push("\nExperiment Parameters");
     csvRows.push("Parameter,Value");
-    csvRows.push("Paradigm,Oddity Task (3AFC)");
+    csvRows.push("Paradigm,Oddity (3-AFC)");
     csvRows.push("Adaptive Rule,2-down-1-up");
     
     const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
@@ -1872,7 +2013,7 @@ function exportToCSV() {
     const link = document.createElement("a");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "oddity_task_data_" + timestamp + ".csv");
+    link.setAttribute("download", "Pretest_Rising_Tone_Oddity_" + timestamp + ".csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

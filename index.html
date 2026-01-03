@@ -1,0 +1,481 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poly-Peng's Lab—Pretest: 音高敏感測試</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #555;
+        }
+
+        .participant-id-section {
+            background: #f0f7ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #667eea;
+        }
+
+        .participant-id-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .id-input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .id-input-group label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .id-input-group input {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .id-input-group input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .id-input-group input.error {
+            border-color: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .intro h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .intro p {
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .start-experiment-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .experiment-card-single {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid #667eea;
+            position: relative;
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .experiment-card-single::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .experiment-list {
+            list-style: none;
+            padding: 20px 0;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .experiment-list li {
+            padding: 10px 0;
+            color: #555;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .experiment-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .experiment-card-single h3 {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+
+        .experiment-card-single p {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .btn-large {
+            padding: 15px 50px !important;
+            font-size: 18px !important;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .info-section {
+            background: #e8f4f8;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            padding: 10px 0;
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .info-section li::before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+
+            @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .experiment-card-single {
+                padding: 25px;
+            }
+
+            .btn-large {
+                padding: 12px 35px !important;
+                font-size: 16px !important;
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .rising { background: #3498db; }
+        .falling { background: #e74c3c; }
+        .level { background: #2ecc71; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎵 Poly-Peng's Lab—Pretest</h1>
+        <p>音高敏感度測試 - Pitch Sensitivity Pretest System</p>
+    </div>
+
+    <div class="content">
+        <div class="intro">
+            <h2>歡迎來到音高辨別實驗平台</h2>
+            <p>
+                本系統採用Oddity三音辨別任務進行動態音高敏感度訓練與測試。通過自適應閾值實驗，
+                精確測量您對不同音高變化模式的辨別能力（Just Noticeable Difference, JND）。
+            </p>
+        </div>
+
+        <div class="participant-id-section">
+            <h3>👤 被試信息（前測 Pretest）</h3>
+            <div class="id-input-group">
+                <label for="participantId">被試ID：</label>
+                <input 
+                    type="text" 
+                    id="participantId" 
+                    placeholder="請輸入您的被試ID（必填）" 
+                    maxlength="50"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="error-message" id="errorMessage">⚠️ 請輸入被試ID後再開始實驗</div>
+        </div>
+
+        <div class="start-experiment-section">
+            <div class="experiment-card-single">
+                <div class="experiment-icon">🎯</div>
+                <h3>開始全部實驗</h3>
+                <p>您將按照隨機順序完成以下三個實驗：</p>
+                <ul class="experiment-list">
+                    <li>📶 音高辨別實驗-平調 (Oddity Level)</li>
+                    <li>📈 音高辨別實驗-升調 (Oddity Rising)</li>
+                    <li>📉 音高辨別實驗-降調 (Oddity Falling)</li>
+                </ul>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                    點擊下方按鈕開始實驗，系統將自動為您安排實驗順序。<br>
+                    每完成一個實驗後，將自動進入下一個實驗。
+                </p>
+                <button class="btn btn-large" onclick="startExperimentSequence()">🚀 開始實驗</button>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>📋 實驗說明</h3>
+            <ul>
+                <li><strong>實驗範式：</strong>Oddity三音辨別任務 - 您將聽到三個音，判斷哪一個音與其他兩個不同</li>
+                <li><strong>自適應算法：</strong>系統會根據您的表現自動調整難度，精確定位您的辨別閾值</li>
+                <li><strong>測量指標：</strong>Just Noticeable Difference (JND) - 可察覺的最小差異</li>
+                <li><strong>實驗時長：</strong>每個實驗約需10-15分鐘完成</li>
+                <li><strong>結果分析：</strong>實驗結束後可查看詳細的閾值分析報告和性能統計</li>
+                <li><strong>數據導出：</strong>支持導出CSV格式的詳細實驗數據</li>
+                <li><strong>建議環境：</strong>請在安靜環境下使用耳機完成實驗，以獲得最佳測試效果</li>
+            </ul>
+        </div>
+
+        <div class="info-section" style="background: #fff3cd; margin-top: 20px;">
+            <h3>⚠️ 注意事項</h3>
+            <ul>
+                <li>首次使用時，瀏覽器可能會請求音頻播放權限，請點擊允許</li>
+                <li>建議使用Chrome、Firefox或Edge等現代瀏覽器</li>
+                <li>實驗過程中請保持專注，避免中途退出</li>
+                <li>如遇到音頻播放問題，可點擊實驗頁面中的"Diagnostics"按鈕進行診斷</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Poly-Peng's Lab | Pitch Sensitivity Pretest System</p>
+        <p style="margin-top: 5px; font-size: 12px;">Powered by Adaptive Threshold Experiment Technology</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const card = document.querySelector('.experiment-card-single');
+        if (card) {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        }
+    });
+
+    window.addEventListener('load', function() {
+        const experimentFiles = [
+            'odd_level.html',
+            'odd_rising.html',
+            'odd_falling.html'
+        ];
+
+        console.log('實驗系統已加載');
+        console.log('可用實驗:', experimentFiles);
+        
+        const savedId = localStorage.getItem('participantId');
+        if (savedId) {
+            document.getElementById('participantId').value = savedId;
+        }
+        
+        document.getElementById('participantId').addEventListener('input', function() {
+            this.classList.remove('error');
+            document.getElementById('errorMessage').classList.remove('show');
+        });
+    });
+    
+    // 生成隨機不重複的實驗序列
+    function generateRandomSequence(length) {
+        const sequence = Array.from({length: length}, (_, i) => i);
+        // Fisher-Yates 洗牌算法
+        for (let i = sequence.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+        }
+        return sequence;
+    }
+    
+    // 開始實驗序列
+    function startExperimentSequence() {
+        const participantId = document.getElementById('participantId').value.trim();
+        const inputElementId = document.getElementById('participantId');
+        const errorElement = document.getElementById('errorMessage');
+        
+        if (!participantId) {
+            inputElementId.classList.add('error');
+            errorElement.classList.add('show');
+            inputElementId.focus();
+            return false;
+        }
+        
+        // 保存被試ID
+        localStorage.setItem('participantId', participantId);
+        
+        // 實驗列表
+        const experimentFiles = [
+            'odd_level.html',
+            'odd_rising.html',
+            'odd_falling.html'
+        ];
+        
+        // 生成隨機序列
+        const sequence = generateRandomSequence(experimentFiles.length);
+        
+        // 保存實驗序列和當前進度
+        localStorage.setItem('experimentSequence', JSON.stringify(sequence));
+        localStorage.setItem('experimentFiles', JSON.stringify(experimentFiles));
+        localStorage.setItem('currentExperimentIndex', '0');
+        
+        console.log('生成實驗序列:', sequence);
+        console.log('實驗順序:', sequence.map(i => experimentFiles[i]));
+        console.log('被試ID:', participantId);
+        
+        // 跳轉到第一個實驗
+        const firstExperimentIndex = sequence[0];
+        const firstExperimentUrl = experimentFiles[firstExperimentIndex];
+        
+        window.location.href = firstExperimentUrl + 
+            '?participantId=' + encodeURIComponent(participantId) +
+            '&sequenceIndex=0';
+    }
+    
+    // 舊版本兼容性函數（如果有其他地方調用）
+    function startExperiment(experimentUrl) {
+        startExperimentSequence();
+    }
+</script>
+</body>
+</html>
