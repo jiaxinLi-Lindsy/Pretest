@@ -314,8 +314,7 @@
         <div class="intro">
             <h2>歡迎來到音高辨別實驗平台</h2>
             <p>
-                本系統採用Oddity三音辨別任務進行動態音高敏感度訓練與測試。通過自適應閾值實驗，
-                精確測量您對不同音高變化模式的辨別能力（Just Noticeable Difference, JND）。
+                本系統採用Oddity三音辨別任務，測量您對不同音高變化模式的辨別能力。
             </p>
         </div>
 
@@ -345,8 +344,7 @@
                     <li>📉 音高辨別實驗-降調 (Oddity Falling)</li>
                 </ul>
                 <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                    點擊下方按鈕開始實驗，系統將自動為您安排實驗順序。<br>
-                    每完成一個實驗後，將自動進入下一個實驗。
+                    點擊下方按鈕開始實驗。
                 </p>
                 <button class="btn btn-large" onclick="startExperimentSequence()">🚀 開始實驗</button>
             </div>
@@ -355,23 +353,17 @@
         <div class="info-section">
             <h3>📋 實驗說明</h3>
             <ul>
-                <li><strong>實驗範式：</strong>Oddity三音辨別任務 - 您將聽到三個音，判斷哪一個音與其他兩個不同</li>
-                <li><strong>自適應算法：</strong>系統會根據您的表現自動調整難度，精確定位您的辨別閾值</li>
-                <li><strong>測量指標：</strong>Just Noticeable Difference (JND) - 可察覺的最小差異</li>
-                <li><strong>實驗時長：</strong>每個實驗約需10-15分鐘完成</li>
-                <li><strong>結果分析：</strong>實驗結束後可查看詳細的閾值分析報告和性能統計</li>
-                <li><strong>數據導出：</strong>支持導出CSV格式的詳細實驗數據</li>
-                <li><strong>建議環境：</strong>請在安靜環境下使用耳機完成實驗，以獲得最佳測試效果</li>
+                <li><strong>實驗任務：</strong>聽到三個音，判斷哪一個音與其他兩個不同</li>
+                <li><strong>實驗時長：</strong>每個實驗約需10-15分鐘</li>
+                <li><strong>建議環境：</strong>請在安靜環境下使用耳機完成實驗</li>
             </ul>
         </div>
 
         <div class="info-section" style="background: #fff3cd; margin-top: 20px;">
             <h3>⚠️ 注意事項</h3>
             <ul>
-                <li>首次使用時，瀏覽器可能會請求音頻播放權限，請點擊允許</li>
-                <li>建議使用Chrome、Firefox或Edge等現代瀏覽器</li>
+                <li>瀏覽器可能會請求音頻播放權限，請點擊允許</li>
                 <li>實驗過程中請保持專注，避免中途退出</li>
-                <li>如遇到音頻播放問題，可點擊實驗頁面中的"Diagnostics"按鈕進行診斷</li>
             </ul>
         </div>
     </div>
