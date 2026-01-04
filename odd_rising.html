@@ -1997,11 +1997,10 @@ window.onload = function() {
     window_onload();
     
     var allAudios = document.querySelectorAll('audio');
-    logDebug("Preloading " + allAudios.length + " audio files");
+    logDebug("Found " + allAudios.length + " audio files (preloaded via HTML preload='auto')");
     
-    allAudios.forEach(function(audio) {
-        audio.load();
-    });
+    // 不需要再次调用 audio.load()，HTML中的 preload="auto" 已经在加载了
+    // 避免重复加载导致卡顿
     
     document.getElementById('text1').value = "請點擊\"開始測試\"";
     
