@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Poly-Peng's Lab—Pretest: Rising Tone Oddity Test</title>
+    <title>POLYU-Peng's Lab: Pitch Discrimination Test</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -604,7 +604,7 @@
     <div class="container">
         <div class="header">
             <img src="Media/animation.gif" alt="Experiment animation">
-            <div class="training-info">Rising Tone Oddity Task (Pretest)</div>
+            <div class="training-info">Mid Rising Tone Discrimination (Oddity Task)</div>
             <div id="experimentProgress" class="experiment-progress" style="display: none;">
                 實驗進度: <span id="progressText">1/3</span>
             </div>
@@ -653,7 +653,7 @@
         </div>
         
         <div id="resultsContainer" class="results-container">
-            <h2 class="result-heading">Rising Tone Oddity Test Results (Pretest)</h2>
+            <h2 class="result-heading">Dynamic Pitch Discrimination Test Results (Oddity Task)</h2>
             
             <div class="highlight-box">
                 <h3 style="margin-top: 0;">Just Noticeable Difference (JND)</h3>
@@ -849,7 +849,6 @@ var audioUnlocked = false;
 var allFilesPresent = true;
 var trialRecords = [];
 var stimulusEndTime = 0;
-var MAX_AUDIO_RETRY = 3; // 最大重試次數
 
 // Oddity task variables
 var oddPosition; // 1, 2, or 3 - which position has the odd one out
@@ -1134,26 +1133,6 @@ function playAudioWithTimeout(audio, timeout) {
                 });
             }
         });
-    });
-}
-
-// 帶重試功能的音頻播放函數
-function playAudioWithRetry(audio, timeout, retryCount) {
-    retryCount = retryCount || 0;
-    
-    return playAudioWithTimeout(audio, timeout).catch(function(error) {
-        if (retryCount < MAX_AUDIO_RETRY) {
-            logDebug("Audio " + audio.id + " failed, retrying... (attempt " + (retryCount + 1) + "/" + MAX_AUDIO_RETRY + ")");
-            // 等待500ms後重試
-            return delay(500).then(function() {
-                // 嘗試重新加載音頻
-                audio.load();
-                return playAudioWithRetry(audio, timeout, retryCount + 1);
-            });
-        } else {
-            logDebug("Audio " + audio.id + " failed after " + MAX_AUDIO_RETRY + " retries");
-            throw new Error("音頻播放失敗（已重試" + MAX_AUDIO_RETRY + "次）: " + error.message);
-        }
     });
 }
 
@@ -1525,7 +1504,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第一個音";
         document.getElementById('firstBtn').classList.add('button-playing');
         logDebug("Playing first sound...");
-        await playAudioWithRetry(sounds[0]);
+        await playAudioWithTimeout(sounds[0]);
         document.getElementById('firstBtn').classList.remove('button-playing');
         
         await delay(1000);
@@ -1534,7 +1513,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第二個音";
         document.getElementById('secondBtn').classList.add('button-playing');
         logDebug("Playing second sound...");
-        await playAudioWithRetry(sounds[1]);
+        await playAudioWithTimeout(sounds[1]);
         document.getElementById('secondBtn').classList.remove('button-playing');
         
         await delay(1000);
@@ -1543,7 +1522,7 @@ async function playOdditySequence() {
         document.getElementById('text1').value = "播放第三個音";
         document.getElementById('thirdBtn').classList.add('button-playing');
         logDebug("Playing third sound...");
-        await playAudioWithRetry(sounds[2]);
+        await playAudioWithTimeout(sounds[2]);
         document.getElementById('thirdBtn').classList.remove('button-playing');
         
         // Enable response buttons
@@ -1561,11 +1540,6 @@ async function playOdditySequence() {
         document.getElementById('thirdBtn').style.background = "#66CCFF";
         
     } catch (error) {
-        logDebug("Audio playback error: " + error);
-        document.getElementById('text1').value = "音頻播放失敗（已重試3次），請刷新頁面";
-        clearButtonAnimations();
-        setTimeout(showDiagnostics, 1000);
-    } {
         logDebug("Audio playback error: " + error);
         document.getElementById('text1').value = "音頻播放錯誤，請刷新頁面";
         clearButtonAnimations();
@@ -1741,10 +1715,11 @@ function testEmailSending() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
+        const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'N/A';
         
         const csvRows = [];
         csvRows.push("Participant ID: " + participantId);
-        csvRows.push("Experiment Type: Pretest");
+        csvRows.push("Session Number: " + sessionNumber);
         csvRows.push("NOTE: This is a TEST email");
         csvRows.push("");
         
@@ -1760,12 +1735,12 @@ function testEmailSending() {
         const csvContent = csvRows.join("\n");
         const BOM = '\uFEFF';
         const csvBase64 = btoa(unescape(encodeURIComponent(BOM + csvContent)));
-        const fileName = "TEST_" + participantId + "_Pretest_Rising_Tone_Oddity.csv";
+        const fileName = "TEST_" + participantId + "_" + sessionNumber + "_Rising_Tone_Oddity.csv";
         
         const templateParams = {
             participant_id: participantId,
-            session_number: "Pretest",
-            experiment_type: "[TEST] Rising Tone Oddity Task (Pretest)",
+            session_number: sessionNumber,
+            experiment_type: "[TEST] Oddity Task",
             start_time: window.experimentStartTime || 'N/A',
             completion_date: new Date().toLocaleString('zh-CN'),
             total_trials: trialRecords.length,
@@ -1814,97 +1789,22 @@ function sendCurrentExperimentResults() {
     
     const urlParams = new URLSearchParams(window.location.search);
     const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
+    const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'N/A';
     
-    const csvRows = [];
-    
-    csvRows.push("Participant ID: " + participantId);
-    csvRows.push("Experiment Type: Pretest");
-    csvRows.push("");
-    
-    const headers = [
-        "Trial Number", 
-        "Timestamp", 
-        "Difficulty Level", 
-        "Modulation Window (%)",
-        "Modulation Window (ms)",
-        "Modulation Rate (semitones/s)",
-        "Slope (semitones/ms)",
-        "Odd Position",
-        "User Response", 
-        "Correct Response", 
-        "Is Correct", 
-        "Reaction Time (ms)", 
-        "Is Reversal",
-        "Step Direction"
-    ];
-    
-    csvRows.push(headers.join(","));
-    
-    trialRecords.forEach(function(trial) {
-        const row = [
-            trial.trialNumber,
-            '"' + trial.timestamp + '"',
-            trial.difficultyLevel,
-            trial.modulationWindowPercent,
-            trial.modulationWindowDuration,
-            trial.modulationRate,
-            trial.slope,
-            trial.oddPosition,
-            '"' + trial.userResponse + '"',
-            '"' + trial.correctResponse + '"',
-            trial.isCorrect ? "1" : "0",
-            trial.reactionTime,
-            trial.isReversal ? "1" : "0",
-            '"' + trial.stepDirection + '"'
-        ];
-        csvRows.push(row.join(","));
-    });
-    
-    const hasData = NumberOfReversals >= MINIMUMREVERSALS;
-    
-    csvRows.push("\nRESULTS SUMMARY");
-    csvRows.push("\nThreshold Results");
-    csvRows.push("Metric,Value,Unit");
-    csvRows.push("Average Difficulty Level," + (hasData ? sentAverage.toFixed(4) : "Insufficient data") + ",level");
-    csvRows.push("Standard Deviation," + (hasData ? sentStdev.toFixed(4) : "N/A") + ",level");
-    csvRows.push("Threshold Window Percent," + (hasData ? thresholdWindowPercent.toFixed(2) : "N/A") + ",%");
-    csvRows.push("Threshold Window Duration," + (hasData ? thresholdWindowDuration.toFixed(2) : "N/A") + ",ms");
-    csvRows.push("JND Absolute Difference," + (hasData ? jndAbsoluteDifference.toFixed(2) : "N/A") + ",ms");
-    csvRows.push("JND Percent Difference," + (hasData ? jndPercentDifference.toFixed(2) : "N/A") + ",%");
-    csvRows.push("Weber's Ratio," + (hasData ? webersRatio.toFixed(4) : "N/A") + "");
-    
-    const rtStats = calculateReactionTimeStats();
-    csvRows.push("\nReaction Time Statistics (ms)");
-    csvRows.push("Mean," + rtStats.mean);
-    csvRows.push("Median," + rtStats.median);
-    csvRows.push("Standard Deviation," + rtStats.sd);
-    
-    const accuracyStats = calculateAccuracyStats();
-    csvRows.push("\nAccuracy Statistics");
-    csvRows.push("Correct Responses," + accuracyStats.correct);
-    csvRows.push("Total Responses," + accuracyStats.total);
-    csvRows.push("Percentage," + accuracyStats.percentage + "%");
-    
-    csvRows.push("\nExperiment Parameters");
-    csvRows.push("Paradigm,Oddity (3-AFC)");
-    csvRows.push("Max Reversals," + MAXREVERSALS);
-    csvRows.push("Min Reversals for Calculation," + MINIMUMREVERSALS);
-    csvRows.push("Max Iterations," + MAXITERATIONS);
-    csvRows.push("Tone Type,Rising (250ms duration)");
-    csvRows.push("Pitch Change," + PITCH_FALL_SEMITONES + " semitones");
-    csvRows.push("Adaptive Rule,2-down-1-up");
-    csvRows.push("Step Size,1 (uniform)");
-    
-    const csvContent = csvRows.join("\n");
+    // 使用exportToCSV中相同的CSV生成逻辑
+    const csvContent = generateCSVContent();
     
     const BOM = '\uFEFF';
     const contentWithBOM = BOM + csvContent;
     const csvBase64 = btoa(unescape(encodeURIComponent(contentWithBOM)));
     
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const fileName = participantId + "_Pretest_Rising_Tone_Oddity.csv";
+    const fileName = participantId + "_" + sessionNumber + "_Rising_Tone_Oddity.csv";
     
-    let resultsSummary = "Rising Tone Oddity Task Results (Pretest):\n";
+    const hasData = NumberOfReversals >= MINIMUMREVERSALS;
+    const rtStats = calculateReactionTimeStats();
+    const accuracyStats = calculateAccuracyStats();
+    
+    let resultsSummary = "Rising Tone Discrimination Results (Oddity):\n";
     if (hasData) {
         resultsSummary += "- JND: " + jndAbsoluteDifference.toFixed(2) + " ms\n";
         resultsSummary += "- Threshold Window: " + thresholdWindowPercent.toFixed(2) + "% (" + thresholdWindowDuration.toFixed(2) + " ms)\n";
@@ -1915,8 +1815,8 @@ function sendCurrentExperimentResults() {
     
     const templateParams = {
         participant_id: participantId,
-        session_number: "Pretest",
-        experiment_type: "Rising Tone Oddity Task (Pretest)",
+        session_number: sessionNumber,
+        experiment_type: "Rising Tone Discrimination (Oddity)",
         start_time: window.experimentStartTime || localStorage.getItem('experimentStartTime') || 'N/A',
         completion_date: new Date().toLocaleString('zh-CN'),
         total_trials: trialRecords.length,
@@ -1938,22 +1838,29 @@ function sendCurrentExperimentResults() {
     emailjs.send(serviceId, templateId, templateParams)
         .then(function(response) {
             logDebug("Email sent successfully! Status: " + response.status);
-            console.log('SUCCESS!', response.status, response.text);
+            alert('实验结果已成功发送到指定邮箱！');
+            
+            if (typeof checkAndNavigateToNextExperiment === 'function') {
+                checkAndNavigateToNextExperiment();
+            }
         })
         .catch(function(error) {
             logDebug("Email failed to send. Error: " + JSON.stringify(error));
-            console.error('FAILED...', error);
+            alert('邮件发送失败：' + (error.text || error.message));
+            console.error('Email sending error:', error);
         });
 }
 
-function exportToCSV() {
+// 生成CSV内容的通用函数
+function generateCSVContent() {
     const urlParams = new URLSearchParams(window.location.search);
     const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'N/A';
+    const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'N/A';
     
     const csvRows = [];
     
     csvRows.push("Participant ID: " + participantId);
-    csvRows.push("Experiment Type: Pretest");
+    csvRows.push("Session Number: " + sessionNumber);
     csvRows.push("");
     
     const headers = [
@@ -2031,15 +1938,23 @@ function exportToCSV() {
     
     csvRows.push("\nExperiment Parameters");
     csvRows.push("Parameter,Value");
-    csvRows.push("Paradigm,Oddity (3-AFC)");
+    csvRows.push("Paradigm,Oddity Task (3AFC)");
     csvRows.push("Adaptive Rule,2-down-1-up");
     
-    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
-    const encodedUri = encodeURI(csvContent);
+    return csvRows.join("\n");
+}
+
+function exportToCSV() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const participantId = urlParams.get('participantId') || localStorage.getItem('participantId') || 'Unknown';
+    const sessionNumber = urlParams.get('sessionNumber') || localStorage.getItem('sessionNumber') || 'Unknown';
+    
+    const csvContent = generateCSVContent();
+    const csvDataUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
     const link = document.createElement("a");
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "Pretest_Rising_Tone_Oddity_" + timestamp + ".csv");
+    const fileName = participantId + "_" + sessionNumber + "_Rising_Tone_Oddity.csv";
+    link.setAttribute("href", csvDataUri);
+    link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

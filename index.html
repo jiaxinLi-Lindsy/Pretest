@@ -79,6 +79,7 @@
             align-items: center;
             gap: 15px;
             flex-wrap: wrap;
+            margin-bottom: 15px;
         }
 
         .id-input-group label {
@@ -105,6 +106,12 @@
         .id-input-group input.error {
             border-color: #e74c3c;
             animation: shake 0.5s;
+        }
+
+        .id-input-group input:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            color: #666;
         }
 
         @keyframes shake {
@@ -319,7 +326,7 @@
         </div>
 
         <div class="participant-id-section">
-            <h3>👤 被試信息（前測 Pretest）</h3>
+            <h3>👤 被試信息</h3>
             <div class="id-input-group">
                 <label for="participantId">被試ID：</label>
                 <input 
@@ -328,6 +335,18 @@
                     placeholder="請輸入您的被試ID（必填）" 
                     maxlength="50"
                     autocomplete="off"
+                >
+            </div>
+            <div class="id-input-group">
+                <label for="sessionNumber">Session Number：</label>
+                <input 
+                    type="text" 
+                    id="sessionNumber" 
+                    value="Pretest"
+                    maxlength="50"
+                    autocomplete="off"
+                    disabled
+                    style="background-color: #e8f4f8; color: #555; font-weight: 600;"
                 >
             </div>
             <div class="error-message" id="errorMessage">⚠️ 請輸入被試ID後再開始實驗</div>
@@ -423,6 +442,7 @@
     // 開始實驗序列
     function startExperimentSequence() {
         const participantId = document.getElementById('participantId').value.trim();
+        const sessionNumber = document.getElementById('sessionNumber').value.trim();
         const inputElementId = document.getElementById('participantId');
         const errorElement = document.getElementById('errorMessage');
         
@@ -433,8 +453,9 @@
             return false;
         }
         
-        // 保存被試ID
+        // 保存被試ID和Session Number
         localStorage.setItem('participantId', participantId);
+        localStorage.setItem('sessionNumber', sessionNumber);
         
         // 實驗列表
         const experimentFiles = [
@@ -454,6 +475,7 @@
         console.log('生成實驗序列:', sequence);
         console.log('實驗順序:', sequence.map(i => experimentFiles[i]));
         console.log('被試ID:', participantId);
+        console.log('Session Number:', sessionNumber);
         
         // 跳轉到第一個實驗
         const firstExperimentIndex = sequence[0];
@@ -461,6 +483,7 @@
         
         window.location.href = firstExperimentUrl + 
             '?participantId=' + encodeURIComponent(participantId) +
+            '&sessionNumber=' + encodeURIComponent(sessionNumber) +
             '&sequenceIndex=0';
     }
     
