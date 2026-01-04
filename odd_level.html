@@ -1135,7 +1135,7 @@ function delay(ms) {
 
 function waitForAudioReady(audio, timeout) {
     return new Promise(function(resolve) {
-        timeout = timeout || 5000;
+        timeout = timeout || 8000;
         
         if (audio.readyState >= 3) {
             logDebug("Audio " + audio.id + " already buffered (readyState: " + audio.readyState + ")");
@@ -1175,7 +1175,7 @@ function waitForAudioReady(audio, timeout) {
 
 function playAudioWithTimeout(audio, timeout) {
     return new Promise(function(resolve, reject) {
-        waitForAudioReady(audio, 3000).then(function() {
+        waitForAudioReady(audio, 8000).then(function() {
             var resolved = false;
             
             var timeoutMs = timeout || Math.max(3000, (audio.duration || 1) * 1000 + 2000);
